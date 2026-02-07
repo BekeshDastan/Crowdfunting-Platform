@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EtherFund</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        dark: '#0B0E14',
+                        card: '#151A23',
+                        accent: '#6366f1',
+                        'accent-hover': '#4f46e5'
+                    },
+                    backgroundImage: {
+                        'hero-pattern': "radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 50%)"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0E14;
+            color: #fff;
+        }
+
+        .glass {
+            background: rgba(21, 26, 35, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #fff 0%, #6366f1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .toast-enter {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .toast-enter-active {
+            transform: translateX(0);
+            opacity: 1;
+            transition: all 300ms;
+        }
+
+        .toast-exit {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast-exit-active {
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 300ms;
+        }
+    </style>
+</head>
+
+<body class="antialiased bg-dark selection:bg-accent selection:text-white">
+
+    <nav class="fixed w-full z-50 glass border-b-0 border-white/10">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center shadow-lg shadow-accent/20">
+                    <i data-lucide="gem" class="text-white w-6 h-6"></i>
+                </div>
+                <span class="text-2xl font-bold tracking-tight">EtherFund</span>
+            </div>
+
+            <div id="walletInfo"
+                class="hidden md:flex items-center gap-6 text-sm font-medium bg-white/5 px-4 py-2 rounded-lg border border-white/5">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="coins" class="w-4 h-4 text-slate-400"></i>
+                    <span class="text-slate-400">ETH:</span>
+                    <span id="ethBalance" class="text-white font-mono">0.00</span>
+                </div>
+                <div class="w-px h-4 bg-white/10"></div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="ticket" class="w-4 h-4 text-accent"></i>
+                    <span class="text-slate-400">Tokens:</span>
+                    <span id="tokenBalance" class="text-accent font-mono">0.00</span>
+                </div>
+            </div>
+
+            <button id="connectBtn"
+                class="group relative px-6 py-2.5 bg-white text-dark font-bold rounded-lg overflow-hidden transition-all hover:scale-105 active:scale-95">
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+                <span class="relative flex items-center gap-2 group-hover:text-white transition-colors">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                    <span id="btnText">Connect Wallet</span>
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="absolute inset-0 bg-hero-pattern"></div>
+        <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs font-medium text-indigo-300 mb-6 border-indigo-500/30">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                Web3 Crowdfunding Live
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
+                Fund ideas <br>
+                <span class="gradient-text">without intermediaries</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10">
+                Decentralized platform. Launch campaigns, receive ETH directly, and reward investors with project
+                tokens.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button id="scrollBtn"
+                    class="px-8 py-4 bg-accent hover:bg-accent-hover text-white rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2">
+                    <i data-lucide="rocket"></i> Find Project
+                </button>
+                <button id="openModalBtn"
+                    class="px-8 py-4 glass hover:bg-white/10 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="plus"></i> Start Your Own
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="py-20 border-y border-white/5 bg-black/20">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+            <div class="p-6 rounded-2xl border border-white/5 bg-white/5 hover:border-accent/50 transition-colors">
+                <div
+                    class="w-12 h-12 bg-indigo-900/50 rounded-lg flex items-center justify-center mb-4 text-indigo-400">
+                    <i data-lucide="coins"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Reward System</h3>
+                <p class="text-slate-400 text-sm">Investors receive ERC20 tokens automatically upon donation (1 ETH =
+                    100 Tokens).</p>
+            </div>
+            <div class="p-6 rounded-2xl border border-white/5 bg-white/5 hover:border-accent/50 transition-colors">
+                <div
+                    class="w-12 h-12 bg-purple-900/50 rounded-lg flex items-center justify-center mb-4 text-purple-400">
+                    <i data-lucide="zap"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Instant Payouts</h3>
+                <p class="text-slate-400 text-sm">Once the goal is reached, the owner can claim funds in a single
+                    transaction.</p>
+            </div>
+            <div class="p-6 rounded-2xl border border-white/5 bg-white/5 hover:border-accent/50 transition-colors">
+                <div
+                    class="w-12 h-12 bg-emerald-900/50 rounded-lg flex items-center justify-center mb-4 text-emerald-400">
+                    <i data-lucide="refresh-ccw"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Refund Guarantee</h3>
+                <p class="text-slate-400 text-sm">If the goal is not met by the deadline, investors can claim a refund.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="campaigns" class="py-24 max-w-7xl mx-auto px-6">
+        <div class="flex justify-between items-end mb-10">
+            <div>
+                <h2 class="text-3xl font-bold">Active Projects</h2>
+                <p class="text-slate-400 mt-2">Invest in what you believe in</p>
+            </div>
+            <div id="loader" class="hidden animate-spin text-accent"><i data-lucide="loader-2" class="w-8 h-8"></i>
+            </div>
+        </div>
+        <div id="campaignsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </section>
+
+    <footer class="border-t border-white/10 py-10 text-center text-slate-500 text-sm">
+        <p>&copy; Our application. All rights reserved.</p>
+    </footer>
+
+    <div id="modal"
+        class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300">
+        <div
+            class="glass p-8 rounded-2xl w-full max-w-lg relative transform scale-95 transition-transform duration-300">
+            <button id="closeModalBtn" class="absolute top-6 right-6 text-slate-400 hover:text-white"><i
+                    data-lucide="x"></i></button>
+            <h2 class="text-2xl font-bold mb-1">Launch Project</h2>
+            <p class="text-slate-400 text-sm mb-6">Creation requires gas. Data is immutable.</p>
+            <form id="createForm" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Title</label>
+                    <input type="text" id="campTitle" required
+                        class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white focus:border-accent outline-none focus:ring-1 focus:ring-accent transition-all"
+                        placeholder="Startup Title">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Goal (ETH)</label>
+                        <input type="number" step="0.001" id="campGoal" required
+                            class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white focus:border-accent outline-none"
+                            placeholder="10.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duration (min)</label>
+                        <input type="number" id="campDuration" required
+                            class="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-white focus:border-accent outline-none"
+                            placeholder="60">
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full bg-accent hover:bg-accent-hover text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-indigo-500/20 mt-2">Publish
+                    to Blockchain</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="fixed top-24 right-6 z-50 flex flex-col gap-3"></div>
+
+    <script src="../scripts/app.js"></script>
+</body>
+
+</html>
